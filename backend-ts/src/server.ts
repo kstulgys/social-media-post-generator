@@ -4,7 +4,7 @@ dotenv.config();
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { generateSocialMediaPosts } from "./generate";
-import { Product } from "./types";
+import { GenerateRequestSchema, formatZodErrors } from "./validation";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,7 +19,18 @@ app.get("/", (req: Request, res: Response) => {
 
 // Generate social media posts
 app.post("/api/generate", async (req: Request, res: Response) => {
-  const product: Product = req.body.product;
+  // Validate request body
+  const validationResult = GenerateRequestSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    res.status(400).json({
+      error: "Validation failed",
+      details: formatZodErrors(validationResult.error),
+    });
+    return;
+  }
+
+  const { product } = validationResult.data;
 
   const posts = await generateSocialMediaPosts(product);
 

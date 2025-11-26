@@ -14,6 +14,27 @@ interface GeneratePostsResponse {
   count: number;
 }
 
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+interface ApiErrorResponse {
+  error: string;
+  details?: ValidationError[];
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public details?: ValidationError[]
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 export async function generatePosts(
   product: Product
 ): Promise<GeneratePostsResponse> {
@@ -27,6 +48,15 @@ export async function generatePosts(
       body: JSON.stringify({ product }),
     }
   );
+
+  if (!response.ok) {
+    const errorData: ApiErrorResponse = await response.json();
+    throw new ApiError(
+      errorData.error || "Request failed",
+      response.status,
+      errorData.details
+    );
+  }
 
   return response.json();
 }
