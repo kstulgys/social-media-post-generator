@@ -74,12 +74,33 @@ export default function Home() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const errors = useMemo(() => validateProduct(product), [product]);
   const isValid = Object.keys(errors).length === 0;
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handleCopyToClipboard = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = content;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    }
   };
 
   const handleGeneratePosts = async () => {
@@ -299,16 +320,59 @@ export default function Home() {
                 key={index}
                 className="p-4 border rounded-lg hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">
-                    {PLATFORM_ICONS[post.platform]}
-                  </span>
-                  <span className="font-medium text-sm text-gray-600 capitalize">
-                    {post.platform}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {post.content.length} chars
-                  </span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">
+                      {PLATFORM_ICONS[post.platform]}
+                    </span>
+                    <span className="font-medium text-sm text-gray-600 capitalize">
+                      {post.platform}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {post.content.length} chars
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleCopyToClipboard(post.content, index)}
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    {copiedIndex === index ? (
+                      <>
+                        <svg
+                          className="h-4 w-4 text-green-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className="text-green-500">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
                 </div>
                 <p className="text-gray-800 whitespace-pre-wrap">
                   {post.content}
