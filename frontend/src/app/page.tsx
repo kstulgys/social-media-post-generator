@@ -3,12 +3,23 @@
 import { useState, useMemo } from "react";
 import { generatePosts, ApiError } from "../api";
 
+type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
+
 interface Product {
   name: string;
   description: string;
   price: number;
   category?: string;
+  tone?: Tone;
 }
+
+const TONE_OPTIONS: { value: Tone; label: string; description: string }[] = [
+  { value: 'professional', label: 'Professional', description: 'Formal and polished' },
+  { value: 'casual', label: 'Casual', description: 'Friendly and conversational' },
+  { value: 'humorous', label: 'Humorous', description: 'Witty and playful' },
+  { value: 'urgent', label: 'Urgent', description: 'Time-sensitive and action-driven' },
+  { value: 'inspirational', label: 'Inspirational', description: 'Uplifting and motivational' },
+];
 
 interface SocialMediaPost {
   platform: "twitter" | "instagram" | "linkedin";
@@ -69,6 +80,7 @@ export default function Home() {
     description: "",
     price: 0,
     category: "",
+    tone: "professional",
   });
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -222,6 +234,30 @@ export default function Home() {
             placeholder="Health & Wellness"
             disabled={isLoading}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Tone & Style
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {TONE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setProduct({ ...product, tone: option.value })}
+                disabled={isLoading}
+                className={`p-3 rounded-md border text-left transition-all ${
+                  product.tone === option.value
+                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                    : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <div className="font-medium text-sm">{option.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

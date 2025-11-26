@@ -1,8 +1,11 @@
+export type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
+
 export interface Product {
   name: string;
   description: string;
   price: number;
   category?: string;
+  tone?: Tone;
 }
 
 export type Platform = 'twitter' | 'instagram' | 'linkedin';

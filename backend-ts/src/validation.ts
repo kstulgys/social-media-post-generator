@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const VALID_TONES = ['professional', 'casual', 'humorous', 'urgent', 'inspirational'] as const;
+
+export const ToneSchema = z.enum(VALID_TONES);
+
 export const ProductSchema = z.object({
   name: z
     .string()
@@ -17,6 +21,7 @@ export const ProductSchema = z.object({
     .string()
     .max(100, "Category must be 100 characters or less")
     .optional(),
+  tone: ToneSchema.optional().default('professional'),
 });
 
 export const GenerateRequestSchema = z.object({

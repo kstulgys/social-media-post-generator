@@ -1,8 +1,11 @@
+type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
+
 interface Product {
   name: string;
   description: string;
   price: number;
   category?: string;
+  tone?: Tone;
 }
 
 interface GeneratePostsResponse {
