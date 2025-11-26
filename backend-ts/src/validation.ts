@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const VALID_TONES = ['professional', 'casual', 'humorous', 'urgent', 'inspirational'] as const;
+export const VALID_PLATFORMS = ['twitter', 'instagram', 'linkedin'] as const;
 
 export const ToneSchema = z.enum(VALID_TONES);
+export const PlatformSchema = z.enum(VALID_PLATFORMS);
 
 export const ProductSchema = z.object({
   name: z
@@ -22,6 +24,11 @@ export const ProductSchema = z.object({
     .max(100, "Category must be 100 characters or less")
     .optional(),
   tone: ToneSchema.optional().default('professional'),
+  platforms: z
+    .array(PlatformSchema)
+    .min(1, "At least one platform must be selected")
+    .optional()
+    .default(['twitter', 'instagram', 'linkedin']),
 });
 
 export const GenerateRequestSchema = z.object({

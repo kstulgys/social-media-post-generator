@@ -1,4 +1,5 @@
 type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
+type Platform = 'twitter' | 'instagram' | 'linkedin';
 
 interface Product {
   name: string;
@@ -6,6 +7,7 @@ interface Product {
   price: number;
   category?: string;
   tone?: Tone;
+  platforms?: Platform[];
 }
 
 interface GeneratePostsResponse {

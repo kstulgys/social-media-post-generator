@@ -1,14 +1,17 @@
 export type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
 
+export type Platform = 'twitter' | 'instagram' | 'linkedin';
+
+export const ALL_PLATFORMS: Platform[] = ['twitter', 'instagram', 'linkedin'];
+
 export interface Product {
   name: string;
   description: string;
   price: number;
   category?: string;
   tone?: Tone;
+  platforms?: Platform[];
 }
-
-export type Platform = 'twitter' | 'instagram' | 'linkedin';
 
 export interface SocialMediaPost {
   platform: Platform;

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { generatePosts, ApiError } from "../api";
 
 type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
+type Platform = 'twitter' | 'instagram' | 'linkedin';
 
 interface Product {
   name: string;
@@ -11,6 +12,7 @@ interface Product {
   price: number;
   category?: string;
   tone?: Tone;
+  platforms?: Platform[];
 }
 
 const TONE_OPTIONS: { value: Tone; label: string; description: string }[] = [
@@ -21,8 +23,14 @@ const TONE_OPTIONS: { value: Tone; label: string; description: string }[] = [
   { value: 'inspirational', label: 'Inspirational', description: 'Uplifting and motivational' },
 ];
 
+const PLATFORM_OPTIONS: { value: Platform; label: string; icon: string }[] = [
+  { value: 'twitter', label: 'Twitter/X', icon: '𝕏' },
+  { value: 'instagram', label: 'Instagram', icon: '📷' },
+  { value: 'linkedin', label: 'LinkedIn', icon: '💼' },
+];
+
 interface SocialMediaPost {
-  platform: "twitter" | "instagram" | "linkedin";
+  platform: Platform;
   content: string;
 }
 
@@ -30,6 +38,7 @@ interface FieldErrors {
   name?: string;
   description?: string;
   price?: string;
+  platforms?: string;
 }
 
 const PLATFORM_ICONS = {
@@ -71,6 +80,10 @@ function validateProduct(product: Product): FieldErrors {
     errors.price = "Price must be less than $1,000,000";
   }
 
+  if (!product.platforms || product.platforms.length === 0) {
+    errors.platforms = "At least one platform must be selected";
+  }
+
   return errors;
 }
 
@@ -81,6 +94,7 @@ export default function Home() {
     price: 0,
     category: "",
     tone: "professional",
+    platforms: ['twitter', 'instagram', 'linkedin'],
   });
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -117,7 +131,7 @@ export default function Home() {
 
   const handleGeneratePosts = async () => {
     // Mark all fields as touched to show any errors
-    setTouched({ name: true, description: true, price: true });
+    setTouched({ name: true, description: true, price: true, platforms: true });
 
     if (!isValid) return;
 
@@ -258,6 +272,47 @@ export default function Home() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Platforms <span className="text-red-500">*</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {PLATFORM_OPTIONS.map((option) => {
+              const isSelected = product.platforms?.includes(option.value) ?? false;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    const currentPlatforms = product.platforms || [];
+                    const newPlatforms = isSelected
+                      ? currentPlatforms.filter(p => p !== option.value)
+                      : [...currentPlatforms, option.value];
+                    setProduct({ ...product, platforms: newPlatforms });
+                  }}
+                  disabled={isLoading}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md border transition-all ${
+                    isSelected
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                      : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <span className="text-xl">{option.icon}</span>
+                  <span className="font-medium text-sm">{option.label}</span>
+                  {isSelected && (
+                    <svg className="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {touched.platforms && errors.platforms && (
+            <p className="mt-1 text-sm text-red-500">{errors.platforms}</p>
+          )}
         </div>
       </div>
 
