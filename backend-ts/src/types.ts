@@ -11,6 +11,13 @@ export interface Product {
   category?: string;
   tone?: Tone;
   platforms?: Platform[];
+  includeResearch?: boolean;
+}
+
+export interface WebResearchResult {
+  trendingHashtags: string[];
+  marketInsights: string[];
+  searchQuery: string;
 }
 
 export interface SocialMediaPost {

@@ -8,6 +8,7 @@ interface Product {
   category?: string;
   tone?: Tone;
   platforms?: Platform[];
+  includeResearch?: boolean;
 }
 
 interface GeneratePostsResponse {

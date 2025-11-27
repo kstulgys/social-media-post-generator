@@ -1,6 +1,7 @@
 import { callOpenAI } from "./openai";
-import { Product, SocialMediaPost, Tone, Platform, ALL_PLATFORMS } from "./types";
+import { Product, SocialMediaPost, Tone, Platform, ALL_PLATFORMS, WebResearchResult } from "./types";
 import { config } from "./config";
+import { performWebResearch } from "./webResearch";
 
 const TONE_GUIDELINES: Record<Tone, string> = {
   professional: `
@@ -38,7 +39,13 @@ const TONE_GUIDELINES: Record<Tone, string> = {
 export async function generateSocialMediaPosts(
   product: Product
 ): Promise<SocialMediaPost[]> {
-  const prompt = buildPrompt(product);
+  // Perform web research if requested
+  let researchResult: WebResearchResult | null = null;
+  if (product.includeResearch) {
+    researchResult = await performWebResearch(product);
+  }
+
+  const prompt = buildPrompt(product, researchResult);
 
   const posts = await callOpenAI(prompt);
 
@@ -80,7 +87,34 @@ function buildPlatformRequirements(selectedPlatforms: Platform[]): string {
   return requirements.join('\n\n');
 }
 
-function buildPrompt(product: Product): string {
+function buildResearchSection(research: WebResearchResult): string {
+  const sections: string[] = [];
+
+  if (research.trendingHashtags.length > 0) {
+    sections.push(`### Trending Hashtags (from web research)
+Use these currently trending hashtags when relevant:
+${research.trendingHashtags.join(', ')}`);
+  }
+
+  if (research.marketInsights.length > 0 && !research.marketInsights[0].includes('skipped')) {
+    sections.push(`### Market Insights (from web research)
+Consider these current market trends:
+${research.marketInsights.map(insight => `- ${insight}`).join('\n')}`);
+  }
+
+  if (sections.length === 0) {
+    return '';
+  }
+
+  return `## Web Research Results
+${sections.join('\n\n')}
+
+**Important**: Incorporate the trending hashtags and market insights naturally into your posts to make them more timely and relevant.
+
+`;
+}
+
+function buildPrompt(product: Product, research: WebResearchResult | null): string {
   const { generation } = config;
   const tone = product.tone || 'professional';
   const toneGuidelines = TONE_GUIDELINES[tone];
@@ -89,6 +123,8 @@ function buildPrompt(product: Product): string {
   // Calculate posts per platform (distribute evenly)
   const postsPerPlatform = Math.max(1, Math.floor(generation.defaultPostCount / selectedPlatforms.length));
   const totalPosts = postsPerPlatform * selectedPlatforms.length;
+
+  const researchSection = research ? buildResearchSection(research) : '';
 
   return `Generate exactly ${totalPosts} social media posts for this product.
 
@@ -101,7 +137,7 @@ ${product.category ? `- **Category**: ${product.category}` : ""}
 ## Tone & Style: ${tone.charAt(0).toUpperCase() + tone.slice(1)}
 ${toneGuidelines}
 
-## Platform Requirements
+${researchSection}## Platform Requirements
 Generate posts ONLY for these platforms: ${selectedPlatforms.join(', ')}
 
 ${buildPlatformRequirements(selectedPlatforms)}

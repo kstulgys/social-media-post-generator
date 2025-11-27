@@ -29,6 +29,7 @@ export const ProductSchema = z.object({
     .min(1, "At least one platform must be selected")
     .optional()
     .default(['twitter', 'instagram', 'linkedin']),
+  includeResearch: z.boolean().optional().default(false),
 });
 
 export const GenerateRequestSchema = z.object({
