@@ -258,9 +258,13 @@ This document outlines a comprehensive plan to improve the Social Media Post Gen
 | 8   | `feat: redesign UI with social media preview cards` | Extend  | High     | 60m  | ✅ Done |
 | 9   | `feat: add web research via OpenAI Responses API`   | Extend  | Medium   | 60m  | ✅ Done |
 | 10  | `feat: add image upload and analysis support`       | Extend  | Low      | 90m  | ⏳ Skipped |
+| 11  | `feat: redesign UI with Sintra.ai dark theme`       | Polish  | High     | 60m  | ✅ Done |
+| 12  | `fix: improve price input UX and category dropdown` | Polish  | Medium   | 20m  | ✅ Done |
+| 13  | `refactor: feature-based folder structure`          | Refactor| Medium   | 45m  | ✅ Done |
+| 14  | `feat: add favicon with lightning bolt emoji`       | Polish  | Low      | 5m   | ✅ Done |
 
-**Total Estimated Time**: ~6.5 hours  
-**Completed**: 9/10 commits (Commit 10 skipped as stretch goal)
+**Total Estimated Time**: ~8.5 hours  
+**Completed**: 13/14 commits (Commit 10 skipped as stretch goal)
 
 ---
 
@@ -335,26 +339,45 @@ backend-ts/src/
 ├── server.ts        # Express app, routes, error middleware
 ├── generate.ts      # Post generation logic
 ├── openai.ts        # OpenAI client with error handling
-├── validation.ts    # Zod schemas (NEW)
+├── webResearch.ts   # Web research with OpenAI Responses API
+├── validation.ts    # Zod schemas
 ├── types.ts         # TypeScript interfaces
-├── config.ts        # Configuration constants
-└── middleware/      # (NEW)
-    └── errorHandler.ts
+└── config.ts        # Configuration constants
 
 frontend/src/
 ├── app/
-│   ├── page.tsx     # Main page with form
-│   ├── layout.tsx   # Root layout
-│   └── globals.css  # Global styles
-├── components/      # (NEW)
-│   ├── PostCard.tsx
-│   ├── TwitterCard.tsx
-│   ├── InstagramCard.tsx
-│   ├── LinkedInCard.tsx
-│   ├── LoadingSpinner.tsx
-│   └── Toast.tsx
+│   ├── page.tsx     # Main page (orchestration only)
+│   ├── layout.tsx   # Root layout with dark theme
+│   └── globals.css  # Global styles with Sintra theme
+├── components/
+│   ├── icons/       # SVG icon components
+│   │   └── index.tsx
+│   ├── ui/          # Reusable UI components
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Select.tsx
+│   │   ├── Textarea.tsx
+│   │   ├── Toggle.tsx
+│   │   └── index.ts
+│   └── PostCard.tsx # Platform-specific post cards
+├── features/
+│   └── generator/
+│       └── components/
+│           ├── ToneSelector.tsx
+│           ├── PlatformSelector.tsx
+│           ├── ErrorAlert.tsx
+│           ├── LoadingSkeleton.tsx
+│           ├── PostsGrid.tsx
+│           └── index.ts
+├── constants/
+│   └── index.ts     # Options, messages, validation constants
+├── types/
+│   └── index.ts     # Shared TypeScript types
+├── utils/
+│   └── validation.ts # Validation functions
 ├── api.ts           # API client
-└── types.ts         # Shared types (NEW)
+└── public/
+    └── favicon.svg  # Lightning bolt favicon
 ```
 
 ---
@@ -376,8 +399,17 @@ The Social Media Post Generator has been transformed from a rough prototype to a
 - Copy to clipboard with visual feedback
 - 5 tone options: Professional, Casual, Humorous, Urgent, Inspirational
 - Platform selection toggles (Twitter, Instagram, LinkedIn)
-- Beautiful PostCard components with platform-specific styling and blue hashtags
+- Beautiful PostCard components with platform-specific styling and gradient hashtags
 - Web research integration using OpenAI's Responses API with web_search tool
+- Seasonal/holiday context awareness for timely marketing
+
+**UI/UX Polish (Commits 11-14)**:
+- Sintra.ai-inspired dark theme with gradient accents (purple → pink → orange)
+- Ambient background glow effects
+- Improved price input with decimal support and validation
+- Category dropdown with 15 popular options
+- Feature-based folder structure for maintainability
+- Custom favicon with lightning bolt emoji
 
 ### Key Technical Decisions
 
@@ -385,6 +417,8 @@ The Social Media Post Generator has been transformed from a rough prototype to a
 2. **TailwindCSS** - No component library needed, faster iteration
 3. **Web research over image upload** - Higher impact, no file storage needed
 4. **Platform-specific cards** - Better UX, meaningful character limits
+5. **Feature-based folder structure** - Better code organization and maintainability
+6. **Sintra.ai dark theme** - Modern, professional look matching client branding
 
 ### Running the Application
 
