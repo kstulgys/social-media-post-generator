@@ -26,7 +26,7 @@ export default function RootLayout({
         <div className="ambient-glow ambient-glow-orange" />
 
         {/* Main content */}
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10 min-h-screen">{children}</div>
       </body>
     </html>
   );
