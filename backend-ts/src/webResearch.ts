@@ -3,6 +3,16 @@ import { Product, WebResearchResult, AppError } from "./types";
 
 let client: OpenAI | null = null;
 
+function getCurrentDateContext(): string {
+  const now = new Date();
+  const month = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const dayOfWeek = now.toLocaleString("en-US", { weekday: "long" });
+  const dayOfMonth = now.getDate();
+  
+  return `Current date: ${dayOfWeek}, ${month} ${dayOfMonth}, ${year}`;
+}
+
 function getClient(): OpenAI {
   if (!client) {
     if (!process.env.OPENAI_API_KEY) {
@@ -31,27 +41,48 @@ export async function performWebResearch(
   const searchQuery = buildSearchQuery(product);
 
   try {
+    const dateContext = getCurrentDateContext();
+    
     // Use the Responses API with web_search tool
     const response = await openaiClient.responses.create({
       model: "gpt-4o",
-      input: `Research trending hashtags and market insights for a product in the social media marketing context.
+      input: `Research trending hashtags, seasonal context, and market insights for social media marketing.
+
+${dateContext}
 
 Product: ${product.name}
 Description: ${product.description}
 Category: ${product.category || "General"}
 
-Please search for:
-1. Currently trending hashtags related to this product category
-2. Recent market trends or news that could make social media posts more relevant
-3. Popular marketing angles being used for similar products
+Please search for and provide:
+
+1. **Seasonal & Holiday Context** (IMPORTANT)
+   - What holidays, events, or observances are coming up in the next 2-4 weeks?
+   - What seasonal themes are relevant right now (e.g., back-to-school, summer sales, holiday shopping)?
+   - Any major shopping events approaching (Black Friday, Cyber Monday, Valentine's Day sales, etc.)?
+
+2. **Trending Hashtags**
+   - Currently trending hashtags related to this product category
+   - Seasonal/holiday hashtags that are popular right now
+   - Any viral trends or challenges that could be leveraged
+
+3. **Market Insights for Marketing**
+   - Recent consumer trends or news relevant to this product
+   - Popular marketing angles being used for similar products
+   - Any sales or promotional themes that resonate with consumers right now
 
 Return your findings as a JSON object with this structure:
 {
   "trendingHashtags": ["#hashtag1", "#hashtag2", ...],
-  "marketInsights": ["insight 1", "insight 2", ...]
+  "marketInsights": ["insight 1", "insight 2", ...],
+  "seasonalContext": {
+    "currentSeason": "e.g., Holiday Season, Back to School, etc.",
+    "upcomingEvents": ["event 1", "event 2"],
+    "marketingAngles": ["angle 1", "angle 2"]
+  }
 }
 
-Focus on hashtags that are currently popular and insights that could make posts more timely and engaging.`,
+Focus on making the social media posts timely, relevant, and aligned with current consumer sentiment and seasonal opportunities.`,
       tools: [
         {
           type: "web_search",
@@ -87,6 +118,7 @@ Focus on hashtags that are currently popular and insights that could make posts 
         return {
           trendingHashtags: parsed.trendingHashtags || [],
           marketInsights: parsed.marketInsights || [],
+          seasonalContext: parsed.seasonalContext || undefined,
           searchQuery,
         };
       }
@@ -98,6 +130,7 @@ Focus on hashtags that are currently popular and insights that could make posts 
         marketInsights: [
           "Research completed but structured data extraction failed",
         ],
+        seasonalContext: undefined,
         searchQuery,
       };
     }

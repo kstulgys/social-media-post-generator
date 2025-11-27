@@ -18,10 +18,10 @@ export const config = {
   },
   
   generation: {
-    defaultPostCount: 5,
+    postsPerPlatform: 2,  // Generate 2 posts per selected platform
     model: 'gpt-4o',
     temperature: 0.8,
-    maxTokens: 1000
+    maxTokens: 2000
   },
   
   api: {

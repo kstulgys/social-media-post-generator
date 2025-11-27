@@ -90,6 +90,23 @@ function buildPlatformRequirements(selectedPlatforms: Platform[]): string {
 function buildResearchSection(research: WebResearchResult): string {
   const sections: string[] = [];
 
+  // Add seasonal context first (most important for timing)
+  if (research.seasonalContext) {
+    const { currentSeason, upcomingEvents, marketingAngles } = research.seasonalContext;
+    let seasonSection = `### Seasonal & Holiday Context (IMPORTANT)
+**Current Season/Period**: ${currentSeason}`;
+    
+    if (upcomingEvents && upcomingEvents.length > 0) {
+      seasonSection += `\n**Upcoming Events/Holidays**:\n${upcomingEvents.map(e => `- ${e}`).join('\n')}`;
+    }
+    
+    if (marketingAngles && marketingAngles.length > 0) {
+      seasonSection += `\n**Recommended Marketing Angles**:\n${marketingAngles.map(a => `- ${a}`).join('\n')}`;
+    }
+    
+    sections.push(seasonSection);
+  }
+
   if (research.trendingHashtags.length > 0) {
     sections.push(`### Trending Hashtags (from web research)
 Use these currently trending hashtags when relevant:
@@ -109,7 +126,7 @@ ${research.marketInsights.map(insight => `- ${insight}`).join('\n')}`);
   return `## Web Research Results
 ${sections.join('\n\n')}
 
-**Important**: Incorporate the trending hashtags and market insights naturally into your posts to make them more timely and relevant.
+**Important**: Incorporate the seasonal context, trending hashtags, and market insights naturally into your posts. Tailor the messaging to current events, holidays, and seasonal themes to maximize engagement and relevance.
 
 `;
 }
@@ -120,8 +137,8 @@ function buildPrompt(product: Product, research: WebResearchResult | null): stri
   const toneGuidelines = TONE_GUIDELINES[tone];
   const selectedPlatforms = product.platforms || ALL_PLATFORMS;
   
-  // Calculate posts per platform (distribute evenly)
-  const postsPerPlatform = Math.max(1, Math.floor(generation.defaultPostCount / selectedPlatforms.length));
+  // Generate configured number of posts per platform
+  const postsPerPlatform = generation.postsPerPlatform;
   const totalPosts = postsPerPlatform * selectedPlatforms.length;
 
   const researchSection = research ? buildResearchSection(research) : '';

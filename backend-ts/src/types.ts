@@ -14,9 +14,16 @@ export interface Product {
   includeResearch?: boolean;
 }
 
+export interface SeasonalContext {
+  currentSeason: string;
+  upcomingEvents: string[];
+  marketingAngles: string[];
+}
+
 export interface WebResearchResult {
   trendingHashtags: string[];
   marketInsights: string[];
+  seasonalContext?: SeasonalContext;
   searchQuery: string;
 }
 
