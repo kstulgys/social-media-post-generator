@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { generatePosts, ApiError } from "../api";
+import PostCard from "../components/PostCard";
 
 type Tone = 'professional' | 'casual' | 'humorous' | 'urgent' | 'inspirational';
 type Platform = 'twitter' | 'instagram' | 'linkedin';
@@ -40,12 +41,6 @@ interface FieldErrors {
   price?: string;
   platforms?: string;
 }
-
-const PLATFORM_ICONS = {
-  twitter: "𝕏",
-  instagram: "📷",
-  linkedin: "💼",
-};
 
 const ERROR_MESSAGES: Record<string, string> = {
   OPENAI_RATE_LIMIT: "We're experiencing high demand. Please try again in a moment.",
@@ -100,33 +95,12 @@ export default function Home() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const errors = useMemo(() => validateProduct(product), [product]);
   const isValid = Object.keys(errors).length === 0;
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const handleCopyToClipboard = async (content: string, index: number) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = content;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
-    }
   };
 
   const handleGeneratePosts = async () => {
@@ -382,19 +356,26 @@ export default function Home() {
       {isLoading && (
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-4">Generating Posts...</h2>
-          <div className="space-y-4">
+          <div className="columns-1 lg:columns-2 gap-6 space-y-6">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-4 border rounded-lg animate-pulse"
+                className="rounded-xl overflow-hidden shadow-lg border border-gray-200 animate-pulse break-inside-avoid"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-20 bg-gray-200 rounded"></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-12 bg-gray-300"></div>
+                <div className="bg-white p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                    <div>
+                      <div className="h-4 w-24 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-3 w-16 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -404,70 +385,18 @@ export default function Home() {
 
       {!isLoading && posts.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Generated Posts</h2>
-          <div className="space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold">Generated Posts</h2>
+            <span className="text-sm text-gray-500">{posts.length} posts</span>
+          </div>
+          <div className="columns-1 lg:columns-2 gap-6 space-y-6">
             {posts.map((post, index) => (
-              <div
-                key={index}
-                className="p-4 border rounded-lg hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">
-                      {PLATFORM_ICONS[post.platform]}
-                    </span>
-                    <span className="font-medium text-sm text-gray-600 capitalize">
-                      {post.platform}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {post.content.length} chars
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleCopyToClipboard(post.content, index)}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                    title="Copy to clipboard"
-                  >
-                    {copiedIndex === index ? (
-                      <>
-                        <svg
-                          className="h-4 w-4 text-green-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span className="text-green-500">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {post.content}
-                </p>
+              <div key={index} className="break-inside-avoid">
+                <PostCard
+                  platform={post.platform}
+                  content={post.content}
+                  index={index}
+                />
               </div>
             ))}
           </div>
