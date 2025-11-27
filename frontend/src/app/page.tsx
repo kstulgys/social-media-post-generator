@@ -25,6 +25,25 @@ const TONE_OPTIONS: { value: Tone; label: string; emoji: string }[] = [
   { value: "inspirational", label: "Inspirational", emoji: "✨" },
 ];
 
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Select a category" },
+  { value: "Health & Wellness", label: "Health & Wellness" },
+  { value: "Technology", label: "Technology" },
+  { value: "Fashion & Apparel", label: "Fashion & Apparel" },
+  { value: "Beauty & Skincare", label: "Beauty & Skincare" },
+  { value: "Food & Beverage", label: "Food & Beverage" },
+  { value: "Home & Living", label: "Home & Living" },
+  { value: "Sports & Fitness", label: "Sports & Fitness" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Travel & Leisure", label: "Travel & Leisure" },
+  { value: "Education", label: "Education" },
+  { value: "Finance & Business", label: "Finance & Business" },
+  { value: "Entertainment", label: "Entertainment" },
+  { value: "Pets & Animals", label: "Pets & Animals" },
+  { value: "Automotive", label: "Automotive" },
+  { value: "Other", label: "Other" },
+];
+
 const PLATFORM_OPTIONS: { value: Platform; label: string; icon: React.ReactNode }[] = [
   {
     value: "twitter",
@@ -94,8 +113,8 @@ function validateProduct(product: Product): FieldErrors {
     errors.description = "Description must be 2000 characters or less";
   }
 
-  if (product.price < 0) {
-    errors.price = "Price must be a positive number";
+  if (!product.price || product.price <= 0) {
+    errors.price = "Price is required";
   } else if (product.price > 1000000) {
     errors.price = "Price must be less than $1,000,000";
   }
@@ -117,6 +136,7 @@ export default function Home() {
     platforms: ["twitter", "instagram", "linkedin"],
     includeResearch: false,
   });
+  const [priceInput, setPriceInput] = useState("");
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -227,18 +247,24 @@ export default function Home() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     className={`input-dark pl-8 ${
                       touched.price && errors.price
                         ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
                         : ""
                     }`}
-                    value={product.price}
-                    onChange={(e) => setProduct({ ...product, price: parseFloat(e.target.value) || 0 })}
+                    value={priceInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string, numbers, and max 2 decimal places
+                      if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
+                        setPriceInput(value);
+                        setProduct({ ...product, price: value === "" ? 0 : parseFloat(value) || 0 });
+                      }
+                    }}
                     onBlur={() => handleBlur("price")}
                     placeholder="49.99"
-                    min="0"
-                    step="0.01"
                     disabled={isLoading}
                   />
                 </div>
@@ -251,14 +277,28 @@ export default function Home() {
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Category <span className="text-zinc-500">(optional)</span>
                 </label>
-                <input
-                  type="text"
-                  className="input-dark"
-                  value={product.category || ""}
-                  onChange={(e) => setProduct({ ...product, category: e.target.value })}
-                  placeholder="Health & Wellness"
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <select
+                    className="input-dark appearance-none cursor-pointer pr-10"
+                    value={product.category || ""}
+                    onChange={(e) => setProduct({ ...product, category: e.target.value })}
+                    disabled={isLoading}
+                  >
+                    {CATEGORY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value} className="bg-[#0f0f17]">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
